@@ -1,0 +1,188 @@
+mysql> use mydb;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> select*from person;
++-----------+------------+-----------+------+
+| person_id | first_name | last_name | age  |
++-----------+------------+-----------+------+
+|         1 | Sunil      | Raj       |   50 |
+|         2 | Kiran      | KUmar     |   40 |
+|         3 | Jack       | Kennedy   |   30 |
+|         4 | Paul       | Kennedy   |   35 |
+|         5 | Daniel     | Song      |   25 |
++-----------+------------+-----------+------+
+5 rows in set (0.01 sec)
+
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE count_person() begin SELECT COUNT(person_id) FROM person
+; end $$
+Query OK, 0 rows affected (0.23 sec)
+
+mysql> DELIMITER :
+mysql> CALL count_person:
++------------------+
+| COUNT(person_id) |
++------------------+
+|                5 |
++------------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SHOW CREATE  PROCEDURE count_person\G
+*************************** 1. row ***************************
+           Procedure: count_person
+            sql_mode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+    Create Procedure: CREATE DEFINER=`root`@`localhost` PROCEDURE `count_person`()
+begin SELECT COUNT(person_id) FROM person; end
+character_set_client: utf8mb4
+collation_connection: utf8mb4_0900_ai_ci
+  Database Collation: utf8mb4_0900_ai_ci
+1 row in set (0.00 sec)
+
+mysql> SHOW PROCEDURE STATUS LIKE '%person%'\G
+*************************** 1. row ***************************
+                  Db: mydb
+                Name: count_person
+                Type: PROCEDURE
+             Definer: root@localhost
+            Modified: 2021-09-27 12:26:33
+             Created: 2021-09-27 12:26:33
+       Security_type: DEFINER
+             Comment: 
+character_set_client: utf8mb4
+collation_connection: utf8mb4_0900_ai_ci
+  Database Collation: utf8mb4_0900_ai_ci
+1 row in set (0.06 sec)
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE display_data()
+    -> begin
+    -> select*from person;
+    -> end $$
+Query OK, 0 rows affected (0.26 sec)
+
+mysql> DELIMITER :
+mysql> CALL display_data:
++-----------+------------+-----------+------+
+| person_id | first_name | last_name | age  |
++-----------+------------+-----------+------+
+|         1 | Sunil      | Raj       |   50 |
+|         2 | Kiran      | KUmar     |   40 |
+|         3 | Jack       | Kennedy   |   30 |
+|         4 | Paul       | Kennedy   |   35 |
+|         5 | Daniel     | Song      |   25 |
++-----------+------------+-----------+------+
+5 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE get_person(IN p_id SMALLINT)
+    -> begin
+    -> select *from person where person_id=p_id;
+    -> end $$
+Query OK, 0 rows affected (0.21 sec)
+
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE get_person2(IN p_id SMALLINT,IN p_age INT) begin selec
+t *from person where person_id>p_id AND p_age; end $$
+Query OK, 0 rows affected (0.24 sec)
+
+mysql> DELIMITER :
+mysql> CALL get_person(3);
+    -> ^C
+mysql> CALL get_person(3);
+    -> ^C
+mysql> DELIMITER :
+mysql> CALL get_person(3):
++-----------+------------+-----------+------+
+| person_id | first_name | last_name | age  |
++-----------+------------+-----------+------+
+|         3 | Jack       | Kennedy   |   30 |
++-----------+------------+-----------+------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL get_person2(3,25):
++-----------+------------+-----------+------+
+| person_id | first_name | last_name | age  |
++-----------+------------+-----------+------+
+|         4 | Paul       | Kennedy   |   35 |
+|         5 | Daniel     | Song      |   25 |
++-----------+------------+-----------+------+
+2 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL get_person2(3,30):
++-----------+------------+-----------+------+
+| person_id | first_name | last_name | age  |
++-----------+------------+-----------+------+
+|         4 | Paul       | Kennedy   |   35 |
+|         5 | Daniel     | Song      |   25 |
++-----------+------------+-----------+------+
+2 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE get_person3(IN p_id SMALLINT,IN p_age INT) begin select *from person where person_id>p_id AND age> p_age; end $$
+Query OK, 0 rows affected (0.25 sec)
+
+mysql> DELIMITER :
+mysql> CALL get_person3(3,30):
++-----------+------------+-----------+------+
+| person_id | first_name | last_name | age  |
++-----------+------------+-----------+------+
+|         4 | Paul       | Kennedy   |   35 |
++-----------+------------+-----------+------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE get_person_name(IN p_id SMALLINT,OUT f_name VARCHAR(45))
+    -> begin
+    -> select first_name INTO f_name FROM person where person_id=p_id;
+    -> end $$
+Query OK, 0 rows affected (0.26 sec)
+
+mysql> DELIMITER :
+mysql> call get_person_name(3,@myname):
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select @myname:
++---------+
+| @myname |
++---------+
+| Jack    |
++---------+
+1 row in set (0.00 sec)
+
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE compute_square(INOUT number INT)
+    -> BEGIN
+    -> SELECT number*number INTO number;
+    -> end $$
+Query OK, 0 rows affected (0.21 sec)
+
+mysql> SET @var=10:
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> call compute_square(@var):
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select @var:
++------+
+| @var |
++------+
+|  100 |
++------+
+1 row in set (0.00 sec)
+
+
+
+
+
